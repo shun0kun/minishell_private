@@ -1,0 +1,39 @@
+#include "header.h"
+
+t_token *tokenize(char *str)
+{
+	int		i;
+	t_token	*token;
+	t_token head;
+
+	token = &head;
+	head.type = TOK_NO;
+	head.value = NULL;
+	head.next = NULL;
+	i = 0;
+	while (str[i])
+	{
+		if (is_space(str[i]))
+		{
+			while (is_space(str[i]))
+				i++;
+		}
+		else if (is_operator(str + i))
+		{
+			token = new_token(token);
+			token->type = get_operation_token_type(str + i);
+			i += get_operation_value(token, str + i);
+		}
+		else
+		{
+			token = new_token(token);
+			token->type = TOK_WORD;
+			i += get_word_value(token, str + i);
+		}
+	}
+	token = new_token(token);
+	token->type = TOK_EOF;
+	token->value = NULL;
+	token->next = NULL;
+	return (head.next);
+}
