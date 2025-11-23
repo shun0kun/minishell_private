@@ -29,6 +29,7 @@ t_token *tokenize(char *str)
 			token = new_token(token);
 			token->type = TOK_WORD;
 			i += get_word_value(token, str + i);
+			token = get_last_token(token);
 		}
 	}
 	token = new_token(token);
@@ -37,3 +38,5 @@ t_token *tokenize(char *str)
 	token->next = NULL;
 	return (head.next);
 }
+
+//$? →　終了コードの環境変数。今度実装する。

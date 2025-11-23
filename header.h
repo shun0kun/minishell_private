@@ -6,18 +6,21 @@
 # include <stdlib.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include "validate_tokens/validate_tokens.h"
+# include "parse_tree/parse_tree.h"
+# include "common_def.h"
 
-typedef enum e_token_type
-{
-	TOK_NO,
-	TOK_WORD,
-	TOK_RED,
-	TOK_PIPE,
-	TOK_ANDOR,
-	TOK_KAKKOO,
-	TOK_KAKKOC,
-	TOK_EOF
-} t_token_type;
+// typedef enum e_token_type
+// {
+// 	TOK_NO,
+// 	TOK_WORD,
+// 	TOK_RED,
+// 	TOK_PIPE,
+// 	TOK_ANDOR,
+// 	TOK_KAKKOO,
+// 	TOK_KAKKOC,
+// 	TOK_EOF
+// } t_token_type;
 
 typedef enum e_state
 {
@@ -26,12 +29,12 @@ typedef enum e_state
 	IN_DOUBLE
 }	t_state;
 
-typedef struct s_token
-{
-	t_token_type	type;
-	char			*value;
-	struct s_token	*next;
-}	t_token;
+// typedef struct s_token
+// {
+// 	t_token_type	type;
+// 	char			*value;
+// 	struct s_token	*next;
+// }	t_token;
 
 typedef struct s_buf
 {
@@ -46,6 +49,7 @@ int				is_alphabet(char c);
 int				is_space(char c);
 int				is_operator(char *str);
 t_token			*new_token(t_token *token);
+t_token			*get_last_token(t_token *token);
 t_token_type	get_operation_token_type(char *str);
 int				get_operation_value(t_token *token, char *str);
 int				get_word_value(t_token *token, char *str);

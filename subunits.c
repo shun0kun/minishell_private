@@ -45,6 +45,15 @@ t_token	*new_token(t_token *token)
 	return (new_token);
 }
 
+t_token	*get_last_token(t_token *token)
+{
+	while (token->next)
+	{
+		token = token->next;	
+	}
+	return (token);
+}
+
 t_token_type	get_operation_token_type(char *str)
 {
 	if (*str == '(')
@@ -112,9 +121,29 @@ int	get_word_value(t_token *token, char *str)
 				state = IN_DOUBLE;
 			else if (str[i] == '$' && (str[i + 1] == '_' || is_alphabet(str[i + 1])))
 			{
-				//ここに書く
-				
-				//ここまで
+				i += get_env(&env_val, str + i);
+				if (!env_val)
+					continue ;
+				while (*env_val)
+				{
+					if (is_space(*env_val))
+					{
+						while (is_space(*env_val))
+							env_val++;
+						buf_add(&buf, '\0');
+						token->value = buf.data;
+						buf_init(&buf);
+						token = new_token(token);
+						token->type = TOK_WORD;
+						continue ;
+					}
+					else
+					{
+						buf_add(&buf, *env_val);
+					}
+					env_val++;
+				}
+				continue ;
 			}
 			else
 				buf_add(&buf, str[i]);
@@ -147,7 +176,7 @@ int	get_word_value(t_token *token, char *str)
 		}
 		i++;
 	}
-	buf.data[buf.len] = '\0';
+	buf_add(&buf, '\0');
 	token->value = buf.data;
 	return (i);
 }

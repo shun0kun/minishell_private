@@ -64,12 +64,19 @@ int	main(void)
 		{
 			write(1, "\033[2J\033[H", 7);
 			free(line);
-			continue ;
 		}
+		else if (is_same_str(line, "exit"))
+		{
+			exit(0);
+		}
+		else
+		{	
 		token = tokenize(line);
 		print_tokens(token);
+		printf("%30s\n", validate_tokens(token) ? "OK" : "KO");
 		free_tokens(token);
 		free(line);
+		}
 	}
 	return (0);
 }
