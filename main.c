@@ -1,20 +1,20 @@
-#include "header.h"
+#include "minishell.h"
 
 void	print_tokens(t_token *token)
 {
-	char *arr[] = {"TOK_NO", "TOK_WORD", "TOK_RED", "TOK_PIPE", "TOK_ANDOR", "TOK_KAKKOO", "TOK_KAKKOC", "TOK_EOF", "\0"};
+	char *arr[] = {"TK_WORD", "TK_REDIR", "TK_PIPE", "TK_LPAREN", "TK_RPAREN", "TK_AND", "TK_OR", "TK_EOF", NULL};
 
 	if (!token)
 	{
 		printf("つくれてない\n");
 		return ;
 	}
-	while (token->type != TOK_EOF)
+	while (token->kind != TK_EOF)
 	{
-		printf("%-20s[%s]\n", arr[token->type], token->value);
+		printf("%-20s[%s]\n", arr[token->kind], token->value);
 		token = token->next;
 	}
-	printf("%s\n", arr[token->type]);
+	printf("%s\n", arr[token->kind]);
 }
 
 void	free_tokens(t_token *token)
@@ -48,10 +48,35 @@ int	is_same_str(const char *s1, const char *s2)
 	return (s1[i] == s2[i]);
 }
 
+// void	check_node(t_node *node)
+// {
+// 	char	*arr[] = {"ND_CMD", "ND_PIPE", "ND_AND", "ND_OR"};
+// 	int		i;
+// 	t_node	*nodee;
+
+// 	printf("%s\n", arr[node->kind]);
+// 	nodee = node->rhs;
+// 	i = 0;
+// 	while (nodee->cmd->argv[i])
+// 	{
+// 		printf("%s, ", nodee->cmd->argv[i]);
+// 		i++;
+// 	}
+// 	printf("\n");
+// 	t_redir	*cur = nodee->cmd->redir;
+// 	while (cur)
+// 	{
+// 		printf("(%s)-", cur->filename);
+// 		cur = cur->next;
+// 	}
+// 	printf("\n");
+// }
+
 int	main(void)
 {
 	char	*line;
 	t_token	*token;
+	t_node	*node;
 
 	while (1)
 	{
@@ -71,11 +96,15 @@ int	main(void)
 		}
 		else
 		{	
-		token = tokenize(line);
-		print_tokens(token);
-		printf("%30s\n", validate_tokens(token) ? "OK" : "KO");
-		free_tokens(token);
-		free(line);
+			token = tokenize(line);
+			if (validate_tokens(token))
+			{
+				node = list(&token);
+				print_ast(node);
+			}
+			free_tokens(token);
+			//free_node
+			free(line);
 		}
 	}
 	return (0);

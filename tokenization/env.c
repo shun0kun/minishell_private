@@ -1,4 +1,5 @@
-#include "header.h"
+#include "../minishell.h"
+#include "private.h"
 
 int	get_env(char **env_val, char *str)
 {

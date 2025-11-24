@@ -1,14 +1,15 @@
-#include "validate_tokens.h"
+#include "../minishell.h"
+#include "private.h"
 
-t_state_val	transition_start(t_token_type a, unsigned int *paren_depth)
+t_state	transition_start(t_token_kind a, unsigned int *paren_depth)
 {
-	if (a == TOK_WORD)
+	if (a == TK_WORD)
 		return(AFTER_WORD);
-	else if (a == TOK_RED)
+	else if (a == TK_REDIR)
 		return (AFTER_RED);
-	else if (a == TOK_PIPE || a == TOK_ANDOR || a == TOK_KAKKOC)
+	else if (a == TK_PIPE || a == TK_AND || a == TK_OR || a == TK_RPAREN)
 		return(ERROR);
-	else if (a == TOK_KAKKOO)
+	else if (a == TK_LPAREN)
 	{
 		*paren_depth += 1;
 		return(START);
@@ -21,19 +22,19 @@ t_state_val	transition_start(t_token_type a, unsigned int *paren_depth)
 	}
 }
 
-t_state_val	transition_afterword(t_token_type a, unsigned int *paren_depth)
+t_state	transition_afterword(t_token_kind a, unsigned int *paren_depth)
 {
-	if (a == TOK_WORD)
+	if (a == TK_WORD)
 		return (AFTER_WORD);
-	else if (a == TOK_RED)
+	else if (a == TK_REDIR)
 		return (AFTER_RED);
-	else if (a == TOK_PIPE)
+	else if (a == TK_PIPE)
 		return (AFTER_PIPE);
-	else if (a == TOK_ANDOR)
+	else if (a == TK_AND || a == TK_OR)
 		return (AFTER_ANDOR);
-	else if (a == TOK_KAKKOO || (a == TOK_KAKKOC && *paren_depth == 0))
+	else if (a == TK_LPAREN || (a == TK_RPAREN && *paren_depth == 0))
 		return (ERROR);
-	else if (a == TOK_KAKKOC && *paren_depth > 0)
+	else if (a == TK_RPAREN && *paren_depth > 0)
 	{
 		*paren_depth -= 1;
 		return (AFTER_PARENS);
@@ -46,29 +47,29 @@ t_state_val	transition_afterword(t_token_type a, unsigned int *paren_depth)
 	}
 }
 
-t_state_val	transition_afterred(t_token_type a, unsigned int *paren_depth)
+t_state	transition_afterred(t_token_kind a, unsigned int *paren_depth)
 {
 	(void)paren_depth;
-	if (a == TOK_WORD)
+	if (a == TK_WORD)
 		return (AFTER_WORD);
 	else
 		return (ERROR);
 }
 
-t_state_val	transition_afterpipe(t_token_type a, unsigned int *paren_depth)
+t_state	transition_afterpipe(t_token_kind a, unsigned int *paren_depth)
 {
 	(void)paren_depth;
-	if (a == TOK_WORD)
+	if (a == TK_WORD)
 		return (AFTER_WORD);
 	else
 		return (ERROR);
 }
 
-t_state_val	transition_afterandor(t_token_type a, unsigned int *paren_depth)
+t_state	transition_afterandor(t_token_kind a, unsigned int *paren_depth)
 {
-	if (a == TOK_WORD)
+	if (a == TK_WORD)
 		return (AFTER_WORD);
-	else if (a == TOK_KAKKOO)
+	else if (a == TK_LPAREN)
 	{
 		*paren_depth += 1;
 		return (START);
@@ -77,16 +78,16 @@ t_state_val	transition_afterandor(t_token_type a, unsigned int *paren_depth)
 		return (ERROR);
 }
 
-t_state_val	transition_afterparens(t_token_type a, unsigned int *paren_depth)
+t_state	transition_afterparens(t_token_kind a, unsigned int *paren_depth)
 {
-	if (a == TOK_ANDOR)
+	if (a == TK_AND || a == TK_OR)
 		return (AFTER_ANDOR);
-	else if (a == TOK_KAKKOC && *paren_depth > 0)
+	else if (a == TK_RPAREN && *paren_depth > 0)
 	{
 		*paren_depth -= 1;
 		return (AFTER_PARENS);
 	}
-	else if (a == TOK_EOF && *paren_depth == 0)
+	else if (a == TK_EOF && *paren_depth == 0)
 	{
 		return (AFTER_PARENS);
 	}
@@ -94,14 +95,14 @@ t_state_val	transition_afterparens(t_token_type a, unsigned int *paren_depth)
 		return (ERROR);
 }
 
-t_state_val	transition_error(t_token_type a, unsigned int *paren_depth)
+t_state	transition_error(t_token_kind a, unsigned int *paren_depth)
 {
 	(void)a;
 	(void)paren_depth;
 	return (ERROR);
 }
 
-t_state_val	transition_ver1(t_state_val state, t_token_type a, unsigned int *paren_depth)
+t_state	transition_ver1(t_state state, t_token_kind a, unsigned int *paren_depth)
 {
 	if (state == START)
 		return (transition_start(a, paren_depth));
@@ -119,23 +120,23 @@ t_state_val	transition_ver1(t_state_val state, t_token_type a, unsigned int *par
 		return (transition_error(a, paren_depth));
 }
 
-t_state_val	transition_ver2(t_state_val state, t_token_type a, unsigned int *paren_depth)
+t_state	transition_ver2(t_state state, t_token_kind a, unsigned int *paren_depth)
 {
-	static t_state_val	(*transition_fns[])(t_token_type, unsigned int *) = {transition_start, transition_afterword, transition_afterred, transition_afterpipe, transition_afterandor, transition_afterparens, transition_error};
+	static t_state	(*transition_fns[])(t_token_kind, unsigned int *) = {transition_start, transition_afterword, transition_afterred, transition_afterpipe, transition_afterandor, transition_afterparens, transition_error};
 
 	return (transition_fns[state](a, paren_depth));
 }
 
 int	validate_tokens(t_token *token)
 {
-	t_state_val		state;
+	t_state		state;
 	unsigned int	paren_depth;
 
 	state = START;
 	paren_depth = 0;
 	while (token)
 	{
-		state = transition_ver2(state, token->type, &paren_depth);
+		state = transition_ver2(state, token->kind, &paren_depth);
 		token = token->next;
 	}
 	if (state == ERROR)

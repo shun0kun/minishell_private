@@ -1,31 +1,5 @@
-#include "header.h"
-
-// typedef struct s_buf
-// {
-// 	char	*data;
-// 	size_t	len;
-// 	size_t	cap;
-// }	t_buf;
-
-// t_buf	*buf_create(void)
-// {
-// 	t_buf	*buf;
-// 	size_t	cap;
-
-// 	cap = 64;
-// 	buf = malloc(sizeof(t_buf));
-// 	if (!buf)
-// 		return (NULL);
-// 	buf->data = malloc(cap);
-// 	if (!buf->data)
-// 	{
-// 		free(buf);
-// 		return (NULL);
-// 	}
-// 	buf->len = 0;
-// 	buf->cap = cap;
-// 	return (buf);
-// }
+#include "../minishell.h"
+#include "private.h"
 
 int	buf_add(t_buf *buf, char c)
 {

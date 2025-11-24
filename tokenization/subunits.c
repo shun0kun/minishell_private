@@ -1,4 +1,5 @@
-#include "header.h"
+#include "../minishell.h"
+#include "private.h"
 
 int	is_number(char c)
 {
@@ -38,7 +39,7 @@ t_token	*new_token(t_token *token)
 	new_token = malloc(sizeof(t_token));
 	if (!token)
 		return (NULL);
-	new_token->type = TOK_NO;
+	// new_token->kind = TK_NO;
 	new_token->value = NULL;
 	new_token->next = NULL;
 	token->next = new_token;
@@ -54,29 +55,32 @@ t_token	*get_last_token(t_token *token)
 	return (token);
 }
 
-t_token_type	get_operation_token_type(char *str)
+t_token_kind	get_operation_token_type(char *str)
 {
 	if (*str == '(')
-		return (TOK_KAKKOO);
+		return (TK_LPAREN);
 	else if (*str == ')')
-		return (TOK_KAKKOC);
+		return (TK_RPAREN);
 	else if (*str == '&' && *(str + 1) == '&')
-		return (TOK_ANDOR);
+		return (TK_AND);
 	else if (*str == '|' && *(str + 1) == '|')
-		return (TOK_ANDOR);
+		return (TK_OR);
 	else if (*str == '|')
-		return (TOK_PIPE);
+		return (TK_PIPE);
 	else if (*str == '<' || *str == '>')
-		return (TOK_RED);
+		return (TK_REDIR);
 	else
-		return (TOK_NO);
+	{
+		return (TK_WORD);
+		// return (TK_NO);
+	}
 }
 
 int	get_operation_value(t_token *token, char *str)
 {
 	if (!token || !str)
 		return (-1);
-	if (token->type == TOK_PIPE || token->type == TOK_KAKKOO || token->type == TOK_KAKKOC || (token->type == TOK_RED && *str != *(str + 1)))
+	if (token->kind == TK_PIPE || token->kind == TK_LPAREN || token->kind == TK_RPAREN || (token->kind == TK_REDIR && *str != *(str + 1)))
 	{
 		token->value = malloc(sizeof(char) * 2);
 		if (!token->value)
@@ -85,7 +89,7 @@ int	get_operation_value(t_token *token, char *str)
 		token->value[1] = '\0';
 		return (1);
 	}
-	else if (token->type == TOK_ANDOR || (token->type == TOK_RED && *str == *(str + 1)))
+	else if (token->kind == TK_AND || token->kind == TK_OR || (token->kind == TK_REDIR && *str == *(str + 1)))
 	{
 		token->value = malloc(sizeof(char) * 3);
 		if (!token->value)
@@ -134,7 +138,7 @@ int	get_word_value(t_token *token, char *str)
 						token->value = buf.data;
 						buf_init(&buf);
 						token = new_token(token);
-						token->type = TOK_WORD;
+						token->kind = TK_WORD;
 						continue ;
 					}
 					else
