@@ -6,6 +6,8 @@
 # include <unistd.h>
 # include <readline/readline.h>
 # include <readline/history.h>
+# include "env/env.h"
+# include "ft/ft.h"
 
 typedef enum e_token_kind
 {

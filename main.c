@@ -48,36 +48,14 @@ int	is_same_str(const char *s1, const char *s2)
 	return (s1[i] == s2[i]);
 }
 
-// void	check_node(t_node *node)
-// {
-// 	char	*arr[] = {"ND_CMD", "ND_PIPE", "ND_AND", "ND_OR"};
-// 	int		i;
-// 	t_node	*nodee;
-
-// 	printf("%s\n", arr[node->kind]);
-// 	nodee = node->rhs;
-// 	i = 0;
-// 	while (nodee->cmd->argv[i])
-// 	{
-// 		printf("%s, ", nodee->cmd->argv[i]);
-// 		i++;
-// 	}
-// 	printf("\n");
-// 	t_redir	*cur = nodee->cmd->redir;
-// 	while (cur)
-// 	{
-// 		printf("(%s)-", cur->filename);
-// 		cur = cur->next;
-// 	}
-// 	printf("\n");
-// }
-
 int	main(void)
 {
 	char	*line;
 	t_token	*token;
 	t_node	*node;
+	t_env	*env;
 
+	env = inherit_env();
 	while (1)
 	{
 		line = readline("$ ");
@@ -93,6 +71,10 @@ int	main(void)
 		else if (is_same_str(line, "exit"))
 		{
 			exit(0);
+		}
+		else if (is_same_str(line, "env"))
+		{
+			print_env(env);
 		}
 		else
 		{	
