@@ -4,6 +4,8 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <fcntl.h>
+
 # include <readline/readline.h>
 # include <readline/history.h>
 # include "env/env.h"
@@ -30,8 +32,7 @@ typedef struct s_token
 
 typedef enum e_node_kind
 {
-	ND_CMD,
-	ND_PIPE,
+	ND_PIPELINE,
 	ND_AND,
 	ND_OR
 }	t_node_kind;
@@ -51,27 +52,28 @@ typedef struct s_redir
 	struct s_redir	*next;
 }	t_redir;
 
-typedef struct s_cmd
+typedef struct s_pipeline
 {
-	char	**argv;
-	t_redir	*redir;
-}	t_cmd;
+	char				**argv;
+	t_redir				*redir;
+	struct s_pipeline	*next;
+}	t_pipeline;
 
 typedef struct s_node
 {
 	t_node_kind		kind;
-	t_cmd			*cmd;
+	t_pipeline		*pipeline;
 	struct s_node	*lhs;
 	struct s_node	*rhs;
 }	t_node;
 
-t_token *tokenize(char *str);
+t_token *tokenize(char *str, int exit_status);
 
 int	validate_tokens(t_token *token);
 
 t_node	*list(t_token **token);
 
-void print_ast(t_node *node);
+
 
 
 

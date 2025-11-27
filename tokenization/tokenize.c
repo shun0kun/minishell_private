@@ -1,12 +1,13 @@
 #include "../minishell.h"
 #include "private.h"
 
-t_token *tokenize(char *str)
+t_token *tokenize(char *str, int exit_status)
 {
 	int		i;
 	t_token	*token;
 	t_token head;
 
+	(void)exit_status;
 	token = &head;
 	// head.kind = TK_NO;
 	head.value = NULL;

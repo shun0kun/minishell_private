@@ -1,8 +1,19 @@
 #include "env.h"
 
-int	is_same_name(char *s1, char *s2)
+int	is_same_env_name(const char *s1, const char *s2)
 {
+	int	i;
 
+	i = 0;
+	while (s1[i] && s2[i] && s1[i] != '=' && s2[i] != '=')
+	{
+		if (s1[i] != s2[i])
+			return (0);
+		i++;
+	}
+	if ((!s1[i] || s1[i] == '=') && (!s2[i] || s2[i] == '='))
+		return (1);
+	return (0);
 }
 
 void	print_env(t_env *env)
@@ -20,7 +31,7 @@ int	env_add(t_env *env, const char *name, const char *val)
 
 	while (1)
 	{
-		if (is_same_name(env->val, name))
+		if (is_same_env_name(env->val, name))
 		{
 			env->val = ft_strcat(env->val, val);
 			if (!env->val)
@@ -48,7 +59,7 @@ void	env_del(t_env *env, const char *name)
 
 	while (env)
 	{
-		if (is_same_name(env->val, name))
+		if (is_same_env_name(env->val, name))
 		{
 			prev->next = env->next;
 			free(env->val);

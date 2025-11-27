@@ -33,14 +33,6 @@ int	buf_extend(t_buf *buf)
 	return (0);
 }
 
-// void	buf_destroy(t_buf *buf)
-// {
-// 	if (!buf)
-// 		return ;
-// 	free(buf->data);
-// 	free(buf);
-// }
-
 int	buf_init(t_buf *buf)
 {
 	size_t	cap;

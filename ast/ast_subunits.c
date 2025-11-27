@@ -1,20 +1,20 @@
 #include "../minishell.h"
 #include "private.h"
 
-void	free_cmd(t_cmd *cmd, t_redir *redir)
+void	free_command(t_pipeline *pipeline, t_redir *redir)
 {
 	size_t	i;
 	t_redir	*cur;
 	t_redir	*next;
 
-	if (!cmd)
+	if (!pipeline)
 		return ;
 	i = 0;
-	if (cmd->argv)
+	if (pipeline->argv)
 	{
-		while (cmd->argv[i])
+		while (pipeline->argv[i])
 		{
-			free(cmd->argv[i]);
+			free(pipeline->argv[i]);
 			i++;
 		}
 	}
@@ -25,7 +25,7 @@ void	free_cmd(t_cmd *cmd, t_redir *redir)
 		free(cur);
 		cur = next;
 	}
-	free(cmd);
+	free(pipeline);
 }
 
 t_redir	*redir_add(t_redir *redir, t_token *token)
@@ -49,20 +49,20 @@ t_redir	*redir_add(t_redir *redir, t_token *token)
 	return (new_redir);
 }
 
-t_cmd	*create_cmd(int cmd_len, int redir_count, t_token *token)
+t_pipeline	*get_command(t_token **token, int cmd_len, int redir_count)
 {
-	t_cmd	*cmd;
-	t_redir	head;
-	t_redir	*redir;
-	size_t	i;
+	t_pipeline	*pipeline;
+	t_redir		head;
+	t_redir		*redir;
+	size_t		i;
 
-	cmd = malloc(sizeof(t_cmd));
-	if (!cmd)
+	pipeline = malloc(sizeof(t_pipeline *));
+	if (!pipeline)
 		return (NULL);
-	cmd->argv = malloc(sizeof(char *) * (cmd_len - redir_count * 2 + 1));
-	if (!cmd->argv)
+	pipeline->argv = malloc(sizeof(char *) * (cmd_len - redir_count * 2 + 1));
+	if (!pipeline->argv)
 	{
-		free(cmd);
+		free(pipeline);
 		return (NULL);
 	}
 	i = 0;
@@ -70,69 +70,87 @@ t_cmd	*create_cmd(int cmd_len, int redir_count, t_token *token)
 	redir = &head;
 	while (1)
 	{
-		if (token->kind == TK_WORD)
-		{
-	
-
-			cmd->argv[i] = ft_strdup(token->value);
-
-			i++;
-			token = token->next;
-		}
-		else if (token->kind == TK_REDIR)
-		{
-
-			redir = redir_add(redir, token);
-
-			if (!redir)
-			{
-				free_cmd(cmd, head.next);
-				return (NULL);
-			}
-			token = (token->next)->next;
-		}
-		else
-			break ;
-	}
-	cmd->argv[i] = NULL;
-	cmd->redir = head.next;
-	return (cmd);
-}
-
-t_cmd	*consume_cmd(t_token **token)
-{
-	t_cmd	*cmd;
-	t_token	*token_cp;
-	int		cmd_len;
-	int		redir_count;
-
-	if ((*token)->kind != TK_WORD && (*token)->kind != TK_REDIR)
-		return (NULL);
-	token_cp = *token;
-	cmd_len = 0;
-	redir_count = 0;
-	while (1)
-	{
 		if ((*token)->kind == TK_WORD)
 		{
-			cmd_len++;
+			pipeline->argv[i++] = ft_strdup((*token)->value);
 			*token = (*token)->next;
 		}
 		else if ((*token)->kind == TK_REDIR)
 		{
-			redir_count++;
-			cmd_len += 2;
+			redir = redir_add(redir, *token);
+			if (!redir)
+			{
+				free_command(pipeline, redir);
+				return (NULL);
+			}
 			*token = ((*token)->next)->next;
 		}
 		else
 			break ;
 	}
+	pipeline->argv[i] = NULL;
+	pipeline->redir = head.next;
+	return (pipeline);
+}
 
-	cmd = create_cmd(cmd_len, redir_count, token_cp);
+int	get_cmd_len(t_token *token)
+{
+	int	len;
 
-	if (!cmd)
+	len = 0;
+	while (token->kind == TK_WORD || token->kind == TK_REDIR)
+	{
+		len++;
+		token = token->next;
+	}
+	return (len);
+}
+
+int	get_redir_count(t_token *token)
+{
+	int	count;
+
+	count = 0;
+	while (token->kind == TK_WORD || token->kind == TK_REDIR)
+	{
+		if (token->kind == TK_REDIR)
+		{
+			count++;
+			token = (token->next)->next;
+		}
+		else
+			token = token->next;
+	}
+	return (count);
+}
+
+t_pipeline	*consume_command(t_token **token)
+{
+	int			cmd_len;
+	int			redir_count;
+
+	if ((*token)->kind != TK_WORD && (*token)->kind != TK_REDIR)
 		return (NULL);
-	return (cmd);
+	cmd_len = get_cmd_len(*token);
+	redir_count = get_redir_count(*token);
+	return (get_command(token, cmd_len, redir_count));
+}
+
+t_pipeline	*consume_pipeline(t_token **token)
+{
+	t_pipeline	head;
+	t_pipeline	*pipeline;
+
+	head.next = NULL;
+	pipeline = &head;
+	while ((*token)->kind == TK_WORD || (*token)->kind == TK_REDIR)
+	{
+		pipeline = pipeline->next;
+		pipeline = consume_command(token);
+		if ((*token)->kind == TK_PIPE)
+			*token = (*token)->next;
+	}
+	return (head.next);
 }
 
 int consume(t_token_kind kind, t_token **token)
