@@ -95,16 +95,16 @@ int	main(void)
 			break ;
 		if (*line)
 			add_history(line);
-		if (is_same_str(line, "clear"))
+		if (ft_strcmp(line, "clear") == 0)
 		{
 			write(1, "\033[2J\033[H", 7);
 			free(line);
 		}
-		else if (is_same_str(line, "exit"))
+		else if (ft_strcmp(line, "exit") == 0)
 		{
 			exit(0);
 		}
-		else if (is_same_str(line, "env"))
+		else if (ft_strcmp(line, "env") == 0)
 		{
 			print_env(env);
 		}
@@ -116,7 +116,7 @@ int	main(void)
 			{
 				node = list(&token);
 				// print_ast(node);
-				exit_status = execve_ast(node);
+				execute_ast(node, &exit_status, env);
 			}
 			free_tokens(token);
 			//free_node

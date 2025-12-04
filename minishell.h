@@ -51,6 +51,7 @@ typedef struct s_redir
 {
 	t_redir_kind	kind;
 	char			*filename;
+	int				heredoc_fd;
 	struct s_redir	*next;
 }	t_redir;
 
@@ -71,12 +72,10 @@ typedef struct s_node
 
 t_token *tokenize(char *str, int exit_status);
 
-int	validate_tokens(t_token *token);
+int		validate_tokens(t_token *token);
 
 t_node	*list(t_token **token);
 
-
-
-
+void	execute_ast(t_node *node, int *exit_status, t_env *env);
 
 #endif

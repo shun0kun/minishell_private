@@ -1,17 +1,25 @@
 #include "private.h"
 
-char	*get_env(char **envp, char *name)
+int	ft_strlen_until(const char *s, char c)
 {
-	int	i;
-	int	name_len;
+	int	len;
 
-	i = 0;
-	name_len = ft_strlen(name);
-	while (envp[i])
+	len = 0;
+	while (s[len] || s[len] != c)
+		len++;
+	return (len);
+}
+
+char	*get_env(t_env *env, char *name)
+{
+	t_env	*node;
+
+	node = env;
+	while (node)
 	{
-		if (ft_strncmp(envp[i], name, name_len) == 0 && envp[i][name_len] == '=')
-			return (envp[i]);
-		i++;
+		if (ft_strcmp(node->name, name) == 0 && node->val)
+			return (node->val);
+		node = node->next;
 	}
 	return (NULL);
 }
@@ -36,6 +44,7 @@ char	*create_next_path(char **p_path_set, char *cmd_name)
 	if (path_set[i + 1] == ':')
 		(*p_path_set)++;
 	path[i++] = '/';
+	j = 0;
 	while (cmd_name[j])
 	{
 		path[i + j] = cmd_name[j];
@@ -61,16 +70,17 @@ char	*find_cmd_path(char *path_set, char *cmd_name)
 	return (NULL);
 }
 
-char	*get_path(char *cmd_name)
+char	*get_path(t_env *env, char *cmd_name)
 {
-	char	**envp;
 	char	*path;
 	char	*path_set;
 
-	path_set = get_env(envp, "PATH");
+	path_set = get_env(env, "PATH");
 	if (!path_set)
 		return (NULL);
 	path = find_cmd_path(path_set, cmd_name);
+	if (!path)
+		return (NULL);
 	return (path);
 }
 
@@ -86,13 +96,18 @@ void	setup_child_io(int pipefd_prev[2], int pipefd_cur[2], t_redir *redir)
 	close_pipefd(pipefd_cur);
 	while (redir)
 	{
-		if (redir->kind == IN || redir->kind == HEREDOC)
+		if (redir->kind == IN)
 		{
 			fd = open(redir->filename, O_RDONLY);
 			if (fd < 0)
 				exit(1);
 			dup2(fd, STDIN_FILENO);
 			close(fd);
+		}
+		else if (redir->kind == HEREDOC)
+		{
+			dup2(redir->heredoc_fd, STDIN_FILENO);
+			close(redir->heredoc_fd);
 		}
 		else if (redir->kind == OUT)
 		{
@@ -114,13 +129,13 @@ void	setup_child_io(int pipefd_prev[2], int pipefd_cur[2], t_redir *redir)
 	}
 }
 
-void	exec_cmd(char **argv)
+void	exec_cmd(char **argv, t_env *env)
 {
 	char	*path;
 	char	**envp;
 	int		saved_error;
 
-	path = get_path(argv[0]);
+	path = get_path(env, argv[0]);
 	if (!path)
 	{
 		if (errno == ENOMEM)
@@ -128,9 +143,11 @@ void	exec_cmd(char **argv)
 		else
 			exit(127);
 	}
+	envp = make_envp(env);
 	execve(path, argv, envp);
 	saved_error = errno;
 	free(path);
+	free(envp);
 	if (saved_error == ENOENT || saved_error == ENOTDIR)
 		exit(127);
 	else if (saved_error == EACCES || saved_error == EISDIR || saved_error == ENOEXEC || saved_error == ETXTBSY)
@@ -139,8 +156,8 @@ void	exec_cmd(char **argv)
 		exit(1);
 }
 
-void	child(int pipefd_prev[2], int pipefd_cur[2], t_pipeline *pipeline)
+void	child(int pipefd_prev[2], int pipefd_cur[2], t_pipeline *pipeline, t_env *env)
 {
 	setup_child_io(pipefd_prev, pipefd_cur, pipeline->redir);
-	exec_cmd(pipeline->argv);
+	exec_cmd(pipeline->argv, env);
 }

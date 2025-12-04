@@ -43,7 +43,7 @@ void	wait_all_pid(pid_t last_pid, int *exit_status)
 	}
 }
 
-void	execute_pipeline(t_node *node, int *exit_status)
+int	execute_pipeline(t_node *node, int *exit_status, t_env *env)
 {
 	t_pipeline	*pl;
 	pid_t		pid;

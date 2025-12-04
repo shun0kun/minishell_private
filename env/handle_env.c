@@ -20,7 +20,8 @@ void	print_env(t_env *env)
 {
 	while (env)
 	{
-		printf("%s\n", env->val);
+		if (env->val)
+			printf("%s=%s\n", env->name, env->val);
 		env = env->next;
 	}
 }

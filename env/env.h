@@ -10,7 +10,9 @@ extern char	**environ;
 
 typedef struct s_env
 {
+	char			*name;
 	char			*val;
+	int				is_exported;
 	struct s_env	*next;
 }	t_env;
 
