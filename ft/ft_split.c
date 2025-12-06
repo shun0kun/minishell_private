@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sshimots <sshimots@student.42tokyo.jp>     +#+  +:+       +#+        */
+/*   By: shimotsukasashunsuke <shimotsukasashuns    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/01 17:42:08 by sshimots          #+#    #+#             */
-/*   Updated: 2025/11/29 16:46:16 by sshimots         ###   ########.fr       */
+/*   Updated: 2025/12/05 11:08:30 by shimotsukas      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

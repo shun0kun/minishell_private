@@ -70,12 +70,19 @@ typedef struct s_node
 	struct s_node	*rhs;
 }	t_node;
 
-t_token *tokenize(char *str, int exit_status);
+typedef struct s_shell
+{
+	t_env	*env;
+	int		exit_status;
+
+}	t_shell;
+
+t_token *tokenize(char *str, t_shell *shell);
 
 int		validate_tokens(t_token *token);
 
 t_node	*list(t_token **token);
 
-void	execute_ast(t_node *node, int *exit_status, t_env *env);
+void	execute_ast(t_node *node, t_shell *shell);
 
 #endif
